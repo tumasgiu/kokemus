@@ -1,0 +1,16 @@
+workspace:
+  base: /go
+  path: src/github.com/tumasgiu/kokemus
+
+pipeline:
+  build_admin:
+    group: build
+    image: golang:1.10
+    commands:
+      - CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o build/server ./main.go
+
+  push_to_hub:
+    image: plugins/docker
+    repo: tumasgiu/kokemus
+    auto_tag: true
+    secrets: [ docker_username, docker_password ]
