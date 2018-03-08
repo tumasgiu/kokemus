@@ -3,7 +3,7 @@ workspace:
   path: src/github.com/tumasgiu/kokemus
 
 pipeline:
-  build_admin:
+  build:
     group: build
     image: golang:1.10
     commands:
