@@ -1,13 +1,14 @@
 package main
 
 import (
-	"net/http"
-	"html/template"
-	"sync"
-	"path/filepath"
+	"github.com/gorilla/handlers"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
+	"html/template"
+	"net/http"
 	"os"
+	"path/filepath"
+	"sync"
 )
 
 // templ represents a single template
@@ -73,7 +74,7 @@ func main() {
 		data:     tplData,
 	})
 
-	if err := http.ListenAndServe(":8080", nil); err != nil {
+	if err := http.ListenAndServe(":8080", handlers.LoggingHandler(os.Stdout, http.DefaultServeMux)); err != nil {
 		log.Fatal("ListenAndServe:", err)
 	}
 }
