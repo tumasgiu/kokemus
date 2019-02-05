@@ -53,6 +53,8 @@ func config() {
 func main() {
 	config()
 
+	log.Info("kokemus")
+
 	hn, err := os.Hostname()
 	if err != nil {
 		log.Info("could not get hostname")
