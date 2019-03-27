@@ -1,6 +1,9 @@
 package main
 
 import (
+	"fmt"
+	"github.com/google/gopacket"
+	"github.com/google/gopacket/pcap"
 	"github.com/gorilla/handlers"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
@@ -9,6 +12,7 @@ import (
 	"os"
 	"path/filepath"
 	"sync"
+	"time"
 )
 
 // templ represents a single template
@@ -55,6 +59,37 @@ func main() {
 
 	log.Info("kokemus")
 
+	if viper.GetString("mode") == "raw" {
+		launchRawListener()
+	} else {
+		launchHttpServer()
+	}
+}
+
+func launchRawListener() {
+	var (
+		device       string = "eth0"
+		snapshotLen int32  = 1024
+		promiscuous  bool   = false
+		err          error
+		timeout time.Duration = 30 * time.Second
+		handle       *pcap.Handle
+	)
+
+	// Open device
+	handle, err = pcap.OpenLive(device, snapshotLen, promiscuous, timeout)
+	if err != nil {log.Fatal(err) }
+	defer handle.Close()
+
+	// Use the handle as a packet source to process all packets
+	packetSource := gopacket.NewPacketSource(handle, handle.LinkType())
+	for packet := range packetSource.Packets() {
+		// Process packet here
+		fmt.Println(packet)
+	}
+}
+
+func launchHttpServer() {
 	hn, err := os.Hostname()
 	if err != nil {
 		log.Info("could not get hostname")
@@ -76,7 +111,8 @@ func main() {
 		data:     tplData,
 	})
 
-	if err := http.ListenAndServe(":8080", handlers.LoggingHandler(os.Stdout, http.DefaultServeMux)); err != nil {
+	err = http.ListenAndServe(":8080", handlers.LoggingHandler(os.Stdout, http.DefaultServeMux))
+	if err != nil {
 		log.Fatal("ListenAndServe:", err)
 	}
 }
