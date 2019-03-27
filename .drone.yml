@@ -5,12 +5,27 @@ workspace:
 pipeline:
   build:
     group: build
-    image: golang:1.10
+    image: golang:1.12-alpine
     commands:
-      - CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o build/server ./main.go
+      - apk update
+      - apk add gcc libc-dev libpcap-dev
+      - GOOS=linux GOARCH=amd64 go build -o build/server ./main.go
 
   push_to_hub:
     image: plugins/docker
     repo: tumasgiu/kokemus
     auto_tag: true
     secrets: [ docker_username, docker_password ]
+
+  github_release:
+    image: plugins/github-release
+    files:
+      - instinct-linux-amd64
+      - instinct-macos-amd64
+    checksum:
+      - md5
+      - sha256
+      - sha512
+    secrets: [ github_token ]
+    when:
+      event: tag
