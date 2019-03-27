@@ -60,13 +60,12 @@ func main() {
 	log.Info("kokemus")
 
 	if viper.GetString("mode") == "raw" {
-		launchRawListener()
-	} else {
-		launchHttpServer()
+		launchRawSniffer()
 	}
+	launchHttpServer()
 }
 
-func launchRawListener() {
+func launchRawSniffer() {
 	var (
 		device       string = "eth0"
 		snapshotLen int32  = 1024
