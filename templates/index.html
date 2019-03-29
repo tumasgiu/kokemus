@@ -22,7 +22,7 @@
 			margin-bottom: 1rem;
 		}
 
-		h1 {
+		h1, h2, h3 {
 			text-align: center
 		}
 	</style>
@@ -33,11 +33,65 @@
 <div class="color-box"></div>
 
 <p class="message">
-I'm running on {{.Hostname}}
+	I'm running on {{.Hostname}}
 </p>
 
 <p class="message">
-{{.Message}}
+	{{.Message}}
 </p>
+
+{{if .UseDb}}
+	<h2>DB Records</h2>
+
+	<div style="display: flex; justify-content: center">
+		<input style="max-width: 500px;" id="record-entry" type="text">
+		<button style="margin-left: 1rem" id="add-record" disabled>Add record</button>
+	</div>
+
+	<h3>Existing Records</h3>
+	<ul style="max-width: 500px;margin: 1rem auto; text-align: center;list-style: none" id="record-list">
+		{{range .Records}}
+			<li>{{.Entry}}</li>
+		{{end}}
+	</ul>
+{{end}}
+
+<script>
+    let addButton = document.getElementById('add-record');
+    let recordInput = document.getElementById('record-entry');
+    let recordList = document.getElementById('record-list');
+
+    recordInput.addEventListener('keyup', (e) => {
+       addButton.disabled = !(e.target.value && e.target.value.length > 2);
+		});
+
+    addButton.addEventListener('click', async () => {
+        let entry = recordInput.value;
+        let headers = new Headers();
+        headers.append("Content-Type", "application/json");
+        let resp = await fetch('/record', {
+            method: "POST",
+            body: JSON.stringify({entry}),
+            headers,
+        });
+        let result = {};
+        try {
+            result = await resp.json()
+        } catch (e) {
+            console.log(e);
+            return
+        }
+        if (result.error) {
+            console.log(result.error)
+        } else {
+            let newEl = document.createElement("li");
+            newEl.textContent = result.entry;
+            recordList.appendChild(newEl);
+            recordInput.value = '';
+            console.log("Record added");
+        }
+    })
+</script>
+
 </body>
 </html>
