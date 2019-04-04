@@ -131,7 +131,9 @@ func launchHttpServer() {
 		debug:    viper.GetBool("debug"),
 		dataMake: func() interface{} {
 			var records []DbRecord
-			db.Find(&records)
+			if viper.GetBool("use_db") {
+				db.Find(&records)
+			}
 			return struct {
 				Hostname string
 				Message  string
